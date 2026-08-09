@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 app = Flask(__name__)
 
 #Routes
@@ -9,9 +9,13 @@ def home():#The "/" route is associated with the home function
     return render_template("index.html")#Flask automatically looks in a folder named "templates" if not otherwise specified
 
 #Prayer Page
-@app.route("/prayer")
+@app.route("/prayer", methods=["GET", "POST"])
 def prayer():
+    if request.method == "POST":
+        prayer_request = request.form.get("prayer_request") #getting the value of "prayer_request" from the form
+        print(prayer_request)
     return render_template("prayer.html")
+
 
 #Attendance Page
 @app.route("/attendance")
