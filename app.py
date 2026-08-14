@@ -12,8 +12,14 @@ def home():#The "/" route is associated with the home function
 @app.route("/prayer", methods=["GET", "POST"])
 def prayer():
     if request.method == "POST":
-        prayer_request = request.form.get("prayer_request") #getting the value of "prayer_request" from the form
-        print(prayer_request)
+        prayer_request = request.form.get("prayer_request").strip() #getting the value of "prayer_request" from the form
+        #Invalid submissions:
+        # Empty
+        # Only white spaces
+        if len(prayer_request)>0: #or could say "if prayer_request" because an empty string is False while a non-empty string is True in Python (called "truthiness" in Python)
+            print(prayer_request)
+        else:
+            print("Prayer request submission is invalid! Enter your prayer request.")
     return render_template("prayer.html")
 
 
