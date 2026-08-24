@@ -1,5 +1,21 @@
 from flask import Flask, render_template, request
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///fca_hub.db"
+db = SQLAlchemy(app)
+
+#Database for Prayer Requests
+class PrayerRequest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=True)
+    request = db.Column(db.Text, nullable=False)
+    prayed_for = db.Column(db.Boolean, default=False, nullable=False)
+    submitted_at = db.Column(db.DateTime, default = datetime.utcnow, nullable=False)
+
+with app.app_context():
+    db.create_all()
+
 
 #Routes
 
