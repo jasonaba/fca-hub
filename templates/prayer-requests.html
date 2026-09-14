@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{%block content%}
+
+<h2>Submitted Prayer Requests</h2>
+
+<table border = "1">
+{% for prayer_request in prayer_requests %}
+<tr>
+    <td>{{prayer_request.id}}</td>
+    <td>{{prayer_request.name}}</td>
+    <td>{{prayer_request.request}}</td>
+    <td>{{prayer_request.prayed_for}}</td>
+    <td>{{prayer_request.submitted_at}}</td>
+    <td>
+        <form action="/prayer-requests" method="POST">
+            {% if prayer_request.prayed_for %}
+            <button type = "submit" name = "id" value = "{{prayer_request.id}}">
+                Mark as not prayed for
+            </button>
+            {%else%}
+            <button type = "submit" name = "id" value = "{{prayer_request.id}}">
+                Mark as prayed for
+            </button>
+            {%endif%}
+        </form>
+    </td>
+</tr>
+{%endfor%}
+
+</table>
+{%endblock%}

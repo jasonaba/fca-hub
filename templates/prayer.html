@@ -6,10 +6,19 @@
 
 <form action="/prayer" method = "POST">
     <p>How can we support you in prayer?</p>
-    <textarea name = "prayer_request"></textarea>
+    <label for="name">Name (optional):</label>
+    <input type = "text" id="name" name = "name">
+
+    <label for = "prayer_request">Prayer request:</label>
+    <textarea id = "prayer_request" name = "prayer_request"></textarea>
 
     <button type = "submit">Submit</button>
 
 </form>
+{% if submitted %}
+<p>Submitted!</p>
+{%elif invalid%}
+<p>Prayer request submission is invalid! Enter your prayer request.</p>
 
+{%endif%}
 {% endblock %}

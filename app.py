@@ -27,16 +27,24 @@ def home():#The "/" route is associated with the home function
 #Prayer Page
 @app.route("/prayer", methods=["GET", "POST"])
 def prayer():
+    submitted = False
+    invalid = False
     if request.method == "POST":
         prayer_request = request.form.get("prayer_request").strip() #getting the value of "prayer_request" from the form
+        name = request.form.get("name").strip()
+        
         #Invalid submissions:
         # Empty
         # Only white spaces
         if len(prayer_request)>0: #or could say "if prayer_request" because an empty string is False while a non-empty string is True in Python (called "truthiness" in Python)
-            print(prayer_request)
+            prayer = PrayerRequest(request = prayer_request, name = name)
+            db.session.add(prayer)
+            db.session.commit()
+            submitted = True
+            invalid = False
         else:
-            print("Prayer request submission is invalid! Enter your prayer request.")
-    return render_template("prayer.html")
+            invalid = True
+    return render_template("prayer.html", submitted=submitted, invalid = invalid)
 
 
 #Attendance Page
@@ -48,6 +56,23 @@ def attendance():
 @app.route("/bibles")
 def bibles():
     return render_template("bibles.html")
+
+@app.route("/prayer-requests", methods=["GET", "POST"])
+def prayer_requests():
+    if request.method=="POST":
+        #if someone selects "Mark as prayed for"
+        prayer_id = request.form.get("id")
+        prayer = db.session.execute(
+            db.select(PrayerRequest).where(PrayerRequest.id == prayer_id)
+            ).scalars().first()
+        prayer.prayed_for = not prayer.prayed_for
+        db.session.commit()
+
+    return render_template( #passes the whole database of Prayer Requests into the html
+        "prayer-requests.html", 
+        prayer_requests = db.session.execute(
+            db.select(PrayerRequest)
+            ).scalars().all())
 
 #Run the web server
 if __name__ == "__main__":
