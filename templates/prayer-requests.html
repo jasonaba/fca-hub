@@ -4,7 +4,7 @@
 
 <h2>Submitted Prayer Requests</h2>
 
-{% if prayer_request %}
+{% if prayer_requests %}
     <table border = "1">
     {% for prayer_request in prayer_requests %}
     <tr>
@@ -33,4 +33,5 @@
 {% else %}
     <p>No prayer requests have been submitted yet.</p>
 {% endif %}
+
 {%endblock%}
