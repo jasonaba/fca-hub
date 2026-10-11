@@ -1,9 +1,36 @@
-from flask import Flask, render_template, request
-from flask_sqlalchemy import SQLAlchemy
+
+import os
 from datetime import datetime
+from functools import wraps
+from hmac import compare_digest
+
+from dotenv import load_dotenv
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    session,
+)
+from flask_sqlalchemy import SQLAlchemy
+
+load_dotenv()
+
 app = Flask(__name__)
+app.config["SECRET_KEY"] = os.environ.get("FLASK_SECRET_KEY")
+
+if not app.config["SECRET_KEY"] or not os.environ.get("FCA_ADMIN_PASSWORD"):
+    raise RuntimeError(
+        "Missing FLASK_SECRET_KEY or FCA_ADMIN_PASSWORD in .env"
+    )
+
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///fca_hub.db"
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
 db = SQLAlchemy(app)
+
 
 #Database for Prayer Requests
 class PrayerRequest(db.Model):
@@ -24,11 +51,48 @@ class StudySuggestion(db.Model):
         nullable=False
     )
 
-with app.app_context():
-    db.create_all()
+
+def leader_required(view_function):
+    @wraps(view_function)
+    def wrapped_view(*args, **kwargs):
+        if not session.get("is_leader"):
+            return redirect(url_for("login"))
+        return view_function(*args, **kwargs)
+
+    return wrapped_view
+
 
 
 #Routes
+
+#Login Page (Leaders Only)
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if session.get("is_leader"):
+        return redirect(url_for("study_suggestions"))
+
+    error = False
+
+    if request.method == "POST":
+        password = request.form.get("password") or ""
+        admin_password = os.environ["FCA_ADMIN_PASSWORD"]
+
+        if compare_digest(password, admin_password):
+            session.clear()
+            session["is_leader"] = True
+            return redirect(url_for("study_suggestions"))
+
+        error = True
+
+    return render_template("login.html", error=error)
+
+
+@app.route("/logout", methods=["POST"])
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
 
 #Home Page
 @app.route("/")
@@ -92,6 +156,7 @@ def suggestions():
 
 
 @app.route("/suggestions/review")
+@leader_required #makes it so only logged-in leaders can access
 def study_suggestions():
     suggestions = db.session.execute(
         db.select(StudySuggestion).order_by(
@@ -111,6 +176,7 @@ def bibles():
     return render_template("bibles.html")
 
 @app.route("/prayer-requests", methods=["GET", "POST"])
+@leader_required
 def prayer_requests():
     if request.method=="POST":
         #if someone selects "Mark as prayed for"
