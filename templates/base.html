@@ -11,9 +11,16 @@
         <a href = "/">Home</a> | 
         <a href = "/prayer">Prayer</a> |
         <a href = "/suggestions">Study Suggestions</a> | 
-        <a href = "/bibles">Bible Inventory</a> |
-        <a href = "/prayer-requests">Prayer Requests</a> |
-        <a href="/suggestions/review">Review Suggestions</a>
+        <a href = "/needbible">Bible Inventory</a> |
+        <a href = "/login">Leader Login</a> |
+        {% if session.get("is_leader")%}
+            <a href = "/prayer-requests">Prayer Requests</a> |
+            <a href="/suggestions/review">Review Suggestions</a> |
+            <a href="{{ url_for('bible_requests') }}">Bible Requests</a> |
+            <form method="POST" action="{{ url_for('logout') }}">
+             <button type="submit">Log Out</button>
+            </form>
+        {% endif %}
     </nav>
     <hr>
     

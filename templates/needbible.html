@@ -1,0 +1,42 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Request a Bible</h1>
+
+{% if submitted %}
+    <p>Your Bible request has been submitted.</p>
+{% endif %}
+
+{% if invalid %}
+    <p>Please enter your name and check the box to request a Bible.</p>
+{% endif %}
+
+<form method="POST" action="{{ url_for('needbibles') }}">
+    <div>
+        <label for="name">Your name (required)</label>
+        <input
+            type="text"
+            id="name"
+            name="name"
+            maxlength="100"
+            required
+        >
+    </div>
+
+    <div>
+        <input
+            type="checkbox"
+            id="needs_bible"
+            name="needs_bible"
+            value="yes"
+            required
+        >
+        <label for="needs_bible">
+            I would like to receive a Bible
+        </label>
+    </div>
+
+    <button type="submit">Submit Request</button>
+</form>
+{% endblock %}

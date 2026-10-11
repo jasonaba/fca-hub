@@ -40,6 +40,7 @@ class PrayerRequest(db.Model):
     prayed_for = db.Column(db.Boolean, default=False, nullable=False)
     submitted_at = db.Column(db.DateTime, default = datetime.utcnow, nullable=False)
 
+#Database for Study Suggestions
 class StudySuggestion(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     suggested_by = db.Column(db.String, nullable=True)
@@ -51,6 +52,24 @@ class StudySuggestion(db.Model):
         nullable=False
     )
 
+#Database for Bible Requests
+class BibleRequest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    needs_bible = db.Column(
+        db.Boolean,
+        default=True,
+        nullable=False
+    )
+    submitted_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        nullable=False
+    )
+
+
+with app.app_context():
+    db.create_all()
 
 def leader_required(view_function):
     @wraps(view_function)
@@ -87,6 +106,7 @@ def login():
 
     return render_template("login.html", error=error)
 
+#Logout route (to log leaders out)
 
 @app.route("/logout", methods=["POST"])
 def logout():
@@ -154,7 +174,7 @@ def suggestions():
     )
 
 
-
+#Suggestions Review Page
 @app.route("/suggestions/review")
 @leader_required #makes it so only logged-in leaders can access
 def study_suggestions():
@@ -170,10 +190,62 @@ def study_suggestions():
     )
 
 
-#Bible inventory
-@app.route("/bibles")
-def bibles():
-    return render_template("bibles.html")
+#Bible Request Page
+@app.route("/needbible", methods=["GET", "POST"])
+def needbibles():
+    submitted = False
+    invalid = False
+
+    if request.method == "POST":
+        name = (request.form.get("name") or "").strip()
+        wants_bible = request.form.get("needs_bible") == "yes"
+        print(wants_bible)
+        if name and wants_bible:
+            bible_request = BibleRequest(name=name)
+            db.session.add(bible_request)
+            db.session.commit()
+            submitted = True
+        else:
+            invalid = True
+
+    return render_template(
+        "needbible.html",
+        submitted=submitted,
+        invalid=invalid
+    )
+
+
+#Bible Requests Review Page
+@app.route("/needbible/review", methods=["GET", "POST"])
+@leader_required
+def bible_requests():
+    if request.method == "POST":
+        request_id = request.form.get("id", type=int)
+        action = request.form.get("action")
+
+        bible_request = db.session.get(BibleRequest, request_id)
+
+        if bible_request is not None:
+            if action == "fulfill":
+                bible_request.needs_bible = False
+                db.session.commit()
+
+            elif action == "delete":
+                db.session.delete(bible_request)
+                db.session.commit()
+
+        return redirect(url_for("bible_requests"))
+
+    bible_requests = db.session.execute(
+        db.select(BibleRequest).order_by(
+            BibleRequest.submitted_at.desc()
+        )
+    ).scalars().all()
+
+    return render_template(
+        "bible-requests.html",
+        bible_requests=bible_requests
+    )
 
 @app.route("/prayer-requests", methods=["GET", "POST"])
 @leader_required

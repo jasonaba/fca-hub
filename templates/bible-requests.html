@@ -1,0 +1,71 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Bible Requests</h1>
+
+{% if bible_requests %}
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Needs Bible</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in bible_requests %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>
+                        {% if item.needs_bible %}
+                            Yes
+
+                            <form
+                                method="POST"
+                                action="{{ url_for('bible_requests') }}"
+                            >
+                                <input
+                                    type="hidden"
+                                    name="id"
+                                    value="{{ item.id }}"
+                                >
+                                <input
+                                    type="hidden"
+                                    name="action"
+                                    value="fulfill"
+                                >
+                                <button type="submit">
+                                    Mark Received
+                                </button>
+                            </form>
+                        {% else %}
+                            No
+                        {% endif %}
+
+                        <form
+                            method="POST"
+                            action="{{ url_for('bible_requests') }}"
+                        >
+                            <input
+                                type="hidden"
+                                name="id"
+                                value="{{ item.id }}"
+                            >
+                            <input
+                                type="hidden"
+                                name="action"
+                                value="delete"
+                            >
+                            <button type="submit">
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No Bible requests have been submitted yet.</p>
+{% endif %}
+{% endblock %}
