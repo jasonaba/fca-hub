@@ -141,6 +141,36 @@ def prayer():
             invalid = True
     return render_template("prayer.html", submitted=submitted, invalid = invalid)
 
+# Prayer Requests Review Page
+@app.route("/prayer-requests", methods=["GET", "POST"])
+@leader_required
+def prayer_requests():
+    if request.method == "POST":
+        prayer_id = request.form.get("id", type=int)
+        action = request.form.get("action")
+
+        prayer = db.session.get(PrayerRequest, prayer_id)
+
+        if prayer is not None:
+            if action == "toggle":
+                # Toggle whether the prayer has been prayed for
+                prayer.prayed_for = not prayer.prayed_for
+                db.session.commit()
+
+            elif action == "delete":
+                # Delete the prayer request
+                db.session.delete(prayer)
+                db.session.commit()
+
+        return redirect(url_for("prayer_requests"))
+
+    # Display all prayer requests
+    return render_template(
+        "prayer-requests.html",
+        prayer_requests=db.session.execute(
+            db.select(PrayerRequest)
+        ).scalars().all()
+    )
 
 #Study Suggestions Page
 @app.route("/suggestions", methods=["GET", "POST"])
@@ -175,14 +205,22 @@ def suggestions():
 
 
 #Suggestions Review Page
-@app.route("/suggestions/review")
+@app.route("/suggestions/review", methods=["GET", "POST"])
 @leader_required #makes it so only logged-in leaders can access
 def study_suggestions():
+    if request.method == "POST":
+        request_id = request.form.get("id")
+        suggestion = db.session.get(StudySuggestion, request_id)
+        action = request.form.get("action")
+        if action == "delete":
+            db.session.delete(suggestion)
+            db.session.commit()
+
     suggestions = db.session.execute(
-        db.select(StudySuggestion).order_by(
-            StudySuggestion.submitted_at.desc()
-        )
-    ).scalars().all()
+            db.select(StudySuggestion).order_by(
+                StudySuggestion.submitted_at.desc()
+            )
+        ).scalars().all()
 
     return render_template(
         "study-suggestions.html",
@@ -247,23 +285,7 @@ def bible_requests():
         bible_requests=bible_requests
     )
 
-@app.route("/prayer-requests", methods=["GET", "POST"])
-@leader_required
-def prayer_requests():
-    if request.method=="POST":
-        #if someone selects "Mark as prayed for"
-        prayer_id = request.form.get("id")
-        prayer = db.session.execute(
-            db.select(PrayerRequest).where(PrayerRequest.id == prayer_id)
-            ).scalars().first()
-        prayer.prayed_for = not prayer.prayed_for
-        db.session.commit()
 
-    return render_template( #passes the whole database of Prayer Requests into the html
-        "prayer-requests.html", 
-        prayer_requests = db.session.execute(
-            db.select(PrayerRequest)
-            ).scalars().all())
 
 #Run the web server
 if __name__ == "__main__":

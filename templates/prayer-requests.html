@@ -1,37 +1,54 @@
 {% extends "base.html" %}
 
-{%block content%}
-
+{% block content %}
 <h2>Submitted Prayer Requests</h2>
 
 {% if prayer_requests %}
-    <table border = "1">
-    {% for prayer_request in prayer_requests %}
-    <tr>
-        <td>{{prayer_request.id}}</td>
-        <td>{{prayer_request.name}}</td>
-        <td>{{prayer_request.request}}</td>
-        <td>{{prayer_request.prayed_for}}</td>
-        <td>{{prayer_request.submitted_at}}</td>
-        <td>
-            <form action="/prayer-requests" method="POST">
-                {% if prayer_request.prayed_for %}
-                <button type = "submit" name = "id" value = "{{prayer_request.id}}">
-                    Mark as not prayed for
-                </button>
-                {%else%}
-                <button type = "submit" name = "id" value = "{{prayer_request.id}}">
-                    Mark as prayed for
-                </button>
-                {%endif%}
-            </form>
-        </td>
-    </tr>
-    {%endfor%}
+    <div class="prayer-list">
+        {% for prayer_request in prayer_requests %}
+            <div class="prayer-card">
+                <h3>{{ prayer_request.name or "Anonymous" }}</h3>
 
-    </table>
+                <p>{{ prayer_request.request }}</p>
+
+                <p>
+                    <strong>Submitted:</strong>
+                    {{ prayer_request.submitted_at }}
+                </p>
+
+                <p>
+                    <strong>Status:</strong>
+                    {% if prayer_request.prayed_for %}
+                        Prayed for
+                    {% else %}
+                        Not yet prayed for
+                    {% endif %}
+                </p>
+
+                <form action="{{ url_for('prayer_requests') }}" method="POST">
+                    <input type="hidden" name="id"
+                           value="{{ prayer_request.id }}">
+                    <input type="hidden" name="action" value="toggle">
+
+                    {% if prayer_request.prayed_for %}
+                        <button type="submit">Mark as not prayed for</button>
+                    {% else %}
+                        <button type="submit">Mark as prayed for</button>
+                    {% endif %}
+                </form>
+
+                <form action="{{ url_for('prayer_requests') }}"
+                      method="POST"
+                      onsubmit="return confirm('Are you sure you want to delete this prayer request? This cannot be undone.');">
+                    <input type="hidden" name="id"
+                           value="{{ prayer_request.id }}">
+                    <input type="hidden" name="action" value="delete">
+                    <button type="submit">Delete</button>
+                </form>
+            </div>
+        {% endfor %}
+    </div>
 {% else %}
     <p>No prayer requests have been submitted yet.</p>
 {% endif %}
-
-{%endblock%}
+{% endblock %}
