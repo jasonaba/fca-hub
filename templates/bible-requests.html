@@ -32,7 +32,7 @@
                                 <input
                                     type="hidden"
                                     name="action"
-                                    value="fulfill"
+                                    value="toggle"
                                 >
                                 <button type="submit">
                                     Mark Received
@@ -40,6 +40,14 @@
                             </form>
                         {% else %}
                             No
+                            <form
+                                method="POST"
+                                action="{{ url_for('bible_requests') }}"
+                            >
+                                <input type="hidden" name="id" value="{{ item.id }}">
+                                <input type="hidden" name="action" value="toggle">
+                                <button type="submit">Mark as Needing Bible</button>
+                            </form>
                         {% endif %}
 
                         <form

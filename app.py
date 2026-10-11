@@ -226,8 +226,8 @@ def bible_requests():
         bible_request = db.session.get(BibleRequest, request_id)
 
         if bible_request is not None:
-            if action == "fulfill":
-                bible_request.needs_bible = False
+            if action == "toggle":
+                bible_request.needs_bible = not bible_request.needs_bible
                 db.session.commit()
 
             elif action == "delete":
