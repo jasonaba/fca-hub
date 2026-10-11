@@ -1,0 +1,1 @@
+This project's aim is to create organization in the club "Fellowship of Christian Athletes" by providing members and leaders with a website to submit prayer requests, study suggestions, and requests to be given Bibles.
