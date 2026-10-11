@@ -1,0 +1,47 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Suggest a Future FCA Study</h2>
+
+<p>
+    What Bible passage, topic, or question would you like
+    our FCA group to explore together?
+</p>
+
+<form action="/suggestions" method="POST">
+
+    <label for="topic">Study topic or passage:</label>
+    <input
+        type="text"
+        id="topic"
+        name="topic"
+        maxlength="200"
+        required
+    >
+
+    <label for="suggested_by">Your name (optional):</label>
+    <input
+        type="text"
+        id="suggested_by"
+        name="suggested_by"
+    >
+
+    <label for="details">Why would you like to study this? (optional)</label>
+    <textarea
+        id="details"
+        name="details"
+    ></textarea>
+
+    <button type="submit">Submit Suggestion</button>
+
+</form>
+
+{% if submitted %}
+    <p>Suggestion submitted successfully!</p>
+{% elif invalid %}
+    <p>Please enter a study topic or Bible passage.</p>
+{% endif %}
+
+{% endblock %}

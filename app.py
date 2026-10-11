@@ -13,6 +13,17 @@ class PrayerRequest(db.Model):
     prayed_for = db.Column(db.Boolean, default=False, nullable=False)
     submitted_at = db.Column(db.DateTime, default = datetime.utcnow, nullable=False)
 
+class StudySuggestion(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    suggested_by = db.Column(db.String, nullable=True)
+    topic = db.Column(db.String(200), nullable=False)
+    details = db.Column(db.Text, nullable=True)
+    submitted_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        nullable=False
+    )
+
 with app.app_context():
     db.create_all()
 
@@ -47,10 +58,52 @@ def prayer():
     return render_template("prayer.html", submitted=submitted, invalid = invalid)
 
 
-#Attendance Page
-@app.route("/attendance")
-def attendance():
-    return render_template("attendance.html")
+#Study Suggestions Page
+@app.route("/suggestions", methods=["GET", "POST"])
+def suggestions():
+    submitted = False
+    invalid = False
+
+    if request.method == "POST":
+        topic = (request.form.get("topic") or "").strip()
+        suggested_by = (request.form.get("suggested_by") or "").strip()
+        details = (request.form.get("details") or "").strip()
+
+        if topic:
+            suggestion = StudySuggestion(
+                topic=topic,
+                suggested_by=suggested_by or None,
+                details=details or None
+            )
+
+            db.session.add(suggestion)
+            db.session.commit()
+
+            submitted = True
+        else:
+            invalid = True
+
+    return render_template(
+        "suggestions.html",
+        submitted=submitted,
+        invalid=invalid
+    )
+
+
+
+@app.route("/suggestions/review")
+def study_suggestions():
+    suggestions = db.session.execute(
+        db.select(StudySuggestion).order_by(
+            StudySuggestion.submitted_at.desc()
+        )
+    ).scalars().all()
+
+    return render_template(
+        "study-suggestions.html",
+        suggestions=suggestions
+    )
+
 
 #Bible inventory
 @app.route("/bibles")

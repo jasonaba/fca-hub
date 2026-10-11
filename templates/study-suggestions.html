@@ -1,0 +1,29 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Submitted Study Suggestions</h2>
+
+{% if suggestions %}
+    {% for suggestion in suggestions %}
+        <section>
+            <h3>{{ suggestion.topic }}</h3>
+
+            {% if suggestion.suggested_by %}
+                <p>Suggested by: {{ suggestion.suggested_by }}</p>
+            {% endif %}
+
+            {% if suggestion.details %}
+                <p>{{ suggestion.details }}</p>
+            {% endif %}
+
+            <p>Submitted: {{ suggestion.submitted_at }}</p>
+        </section>
+        <hr>
+    {% endfor %}
+{% else %}
+    <p>No study suggestions have been submitted yet.</p>
+{% endif %}
+
+{% endblock %}
